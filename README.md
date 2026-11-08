@@ -1,6 +1,9 @@
 # صقر — SAQR
 
-نسختان في هذا المستودع: **الكويست** (المجلدات الرئيسية، Godot) و**الويب «غارة صقر»** في [`web/`](web/) — العبها مباشرة: https://raw.githack.com/3wasfnjd/saqr/main/web/index.html
+**▶ العب غارة صقر:** https://3wasfnjd.github.io/saqr/
+
+
+نسختان في هذا المستودع: **الكويست** (المجلدات الرئيسية، Godot) و**الويب «غارة صقر»** في [`web/`](web/) — العبها مباشرة: https://3wasfnjd.github.io/saqr/
 
 ## نسخة Meta Quest
 
