@@ -1071,70 +1071,70 @@ const UPGRADES = [
 ];
 const lvl = (id) => save.ups[id] || 0;
 const STAGES = [
-  { name: "فجر العارض", theme: "day", waves: [
+  { name: "فجر الخبر", theme: "day", waves: [
       [{ type: "fighter", n: 5, form: "v" }],
       [{ type: "zig", n: 6, form: "col", x: 0.3 }, { type: "zig", n: 6, form: "col", x: 0.7, delay: 0.8 }],
       [{ type: "fighter", n: 4, form: "line" }, { type: "heavy", n: 1, form: "mid", delay: 1.8 }],
       [{ type: "fighter", n: 5, form: "v" }, { type: "diver", n: 4, form: "sides", delay: 2.4 }],
     ], boss: null,
     chal: [{ text: "اجمع 25 عملة", ok: (s) => s.coins >= 25 }, { text: "أنهِ والهيكل فوق 50٪", ok: (s) => s.hpPct >= 0.5 }] },
-  { name: "روضة خريم", theme: "bay", waves: [
+  { name: "جزيرة تاروت", theme: "bay", waves: [
       [{ type: "boat", n: 3, form: "spread" }, { type: "fighter", n: 5, form: "v", delay: 2 }],
       [{ type: "heli", n: 3, form: "line" }],
       [{ type: "boat", n: 4, form: "spread" }, { type: "zig", n: 6, form: "col", x: 0.5, delay: 1.4 }],
       [{ type: "heli", n: 2, form: "line" }, { type: "diver", n: 6, form: "sides", delay: 1.6 }],
     ], boss: "fortress",
     chal: [{ text: "دمّر 5 سفن", ok: (s) => s.kills.boat >= 5 }, { text: "بدون استخدام قنبلة", ok: (s) => s.bombsUsed === 0 }] },
-  { name: "غروب طويق", theme: "dusk", waves: [
+  { name: "غروب نصف القمر", theme: "dusk", waves: [
       [{ type: "diver", n: 6, form: "sides" }, { type: "fighter", n: 5, form: "v", delay: 2 }],
       [{ type: "heavy", n: 2, form: "pair" }],
       [{ type: "zig", n: 8, form: "col", x: 0.25 }, { type: "zig", n: 8, form: "col", x: 0.75, delay: 0.5 }, { type: "heli", n: 2, form: "line", delay: 2.6 }],
       [{ type: "fighter", n: 7, form: "v" }, { type: "diver", n: 6, form: "sides", delay: 2 }, { type: "heavy", n: 1, form: "mid", delay: 3.8 }],
     ], boss: null,
     chal: [{ text: "أسقط 45 طيارة", ok: (s) => s.airKills >= 45 }, { text: "أنهِ والهيكل فوق 60٪", ok: (s) => s.hpPct >= 0.6 }] },
-  { name: "سيل وادي حنيفة", theme: "storm", waves: [
+  { name: "مرفأ دارين", theme: "storm", waves: [
       [{ type: "boat", n: 5, form: "spread" }, { type: "heli", n: 2, form: "line", delay: 2.6 }],
       [{ type: "fighter", n: 5, form: "v" }, { type: "fighter", n: 5, form: "v", delay: 2.8 }],
       [{ type: "boat", n: 6, form: "spread" }, { type: "diver", n: 6, form: "sides", delay: 2 }],
       [{ type: "heavy", n: 2, form: "pair" }, { type: "zig", n: 8, form: "col", x: 0.5, delay: 2 }],
     ], boss: "ship",
     chal: [{ text: "وصّل سلسلة ×12", ok: (s) => s.maxCombo >= 12 }, { text: "التقط 3 أسلحة", ok: (s) => s.weaponsPicked >= 3 }] },
-  { name: "ليل الدهناء", theme: "night", waves: [
+  { name: "ليل الدمام", theme: "night", waves: [
       [{ type: "zig", n: 8, form: "col", x: 0.3 }, { type: "zig", n: 8, form: "col", x: 0.7, delay: 0.4 }, { type: "diver", n: 6, form: "sides", delay: 2 }],
       [{ type: "heli", n: 4, form: "line" }, { type: "fighter", n: 5, form: "v", delay: 2.6 }],
       [{ type: "heavy", n: 2, form: "pair" }, { type: "boat", n: 4, form: "spread", delay: 1.4 }],
       [{ type: "fighter", n: 7, form: "v" }, { type: "fighter", n: 7, form: "v", delay: 2.6 }, { type: "diver", n: 8, form: "sides", delay: 4.4 }],
     ], boss: "fortress",
     chal: [{ text: "بدون استخدام قنبلة", ok: (s) => s.bombsUsed === 0 }, { text: "أنهِ والهيكل فوق 40٪", ok: (s) => s.hpPct >= 0.4 }] },
-  { name: "شعيب الحيسية", theme: "bay", waves: [
+  { name: "خليج رأس تنورة", theme: "bay", waves: [
       [{ type: "heli", n: 3, form: "line" }, { type: "boat", n: 3, form: "spread", delay: 1.4 }],
       [{ type: "heli", n: 4, form: "line" }, { type: "zig", n: 8, form: "col", x: 0.5, delay: 2 }],
       [{ type: "heavy", n: 2, form: "pair" }, { type: "heli", n: 2, form: "line", delay: 2.4 }],
       [{ type: "heli", n: 5, form: "line" }, { type: "diver", n: 6, form: "sides", delay: 2.4 }],
     ], boss: { kind: "fortress", name: "الحصن الحديدي", hp: 1.25 },
     chal: [{ text: "أسقط 12 مروحية", ok: (s) => (s.kills.heli || 0) >= 12 }, { text: "التقط درعين", ok: (s) => (s.picked.shield || 0) >= 2 }] },
-  { name: "نفود الثويرات", theme: "dusk", waves: [
+  { name: "ساحل العقير", theme: "dusk", waves: [
       [{ type: "fighter", n: 7, form: "v" }, { type: "fighter", n: 7, form: "v", delay: 2.4 }],
       [{ type: "heavy", n: 3, form: "trio" }],
       [{ type: "diver", n: 8, form: "sides" }, { type: "zig", n: 8, form: "col", x: 0.3, delay: 1.6 }, { type: "zig", n: 8, form: "col", x: 0.7, delay: 2 }],
       [{ type: "boat", n: 5, form: "spread" }, { type: "heli", n: 3, form: "line", delay: 1.6 }, { type: "fighter", n: 5, form: "v", delay: 3.6 }],
     ], boss: null,
     chal: [{ text: "وصّل سلسلة ×20", ok: (s) => s.maxCombo >= 20 }, { text: "أنهِ والهيكل فوق 50٪", ok: (s) => s.hpPct >= 0.5 }] },
-  { name: "عجاج الصمّان", theme: "storm", waves: [
+  { name: "عاصفة الجبيل", theme: "storm", waves: [
       [{ type: "diver", n: 10, form: "sides" }],
       [{ type: "heavy", n: 2, form: "pair" }, { type: "diver", n: 8, form: "sides", delay: 2 }],
       [{ type: "fighter", n: 9, form: "v" }, { type: "heli", n: 4, form: "line", delay: 2.4 }],
       [{ type: "zig", n: 10, form: "col", x: 0.25 }, { type: "zig", n: 10, form: "col", x: 0.75, delay: 0.4 }, { type: "heavy", n: 2, form: "pair", delay: 3 }],
     ], boss: { kind: "ship", name: "المدمّرة", hp: 1.2 },
     chal: [{ text: "دمّر 4 قاذفات ثقيلة", ok: (s) => (s.kills.heavy || 0) >= 4 }, { text: "بدون استخدام قنبلة", ok: (s) => s.bombsUsed === 0 }] },
-  { name: "ظلمة العرمة", theme: "night", waves: [
+  { name: "عتمة الخفجي", theme: "night", waves: [
       [{ type: "fighter", n: 9, form: "v" }, { type: "diver", n: 8, form: "sides", delay: 2 }],
       [{ type: "heli", n: 5, form: "line" }, { type: "boat", n: 5, form: "spread", delay: 1 }],
       [{ type: "heavy", n: 3, form: "trio" }, { type: "zig", n: 10, form: "col", x: 0.5, delay: 2.4 }],
       [{ type: "fighter", n: 9, form: "v" }, { type: "fighter", n: 9, form: "v", delay: 2.4 }, { type: "diver", n: 10, form: "sides", delay: 4 }],
     ], boss: { kind: "fortress", name: "حصن الظلام", hp: 1.5 },
     chal: [{ text: "اجمع 50 عملة", ok: (s) => s.coins >= 50 }, { text: "لا تنزل تحت 40٪ أبدًا", ok: (s) => s.minHpPct >= 0.4 }] },
-  { name: "قايلة سدير", theme: "inferno", waves: [
+  { name: "لهيب رأس الخير", theme: "inferno", waves: [
       [{ type: "fighter", n: 7, form: "v" }, { type: "heavy", n: 1, form: "mid", delay: 2 }, { type: "diver", n: 6, form: "sides", delay: 3.8 }],
       [{ type: "boat", n: 5, form: "spread" }, { type: "heli", n: 4, form: "line", delay: 1.4 }],
       [{ type: "heavy", n: 3, form: "trio" }, { type: "zig", n: 10, form: "col", x: 0.5, delay: 2.6 }],
