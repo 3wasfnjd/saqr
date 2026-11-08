@@ -1,4 +1,8 @@
-# صقر — SAQR (v1.0)
+# صقر — SAQR
+
+نسختان في هذا المستودع: **الكويست** (المجلدات الرئيسية، Godot) و**الويب «غارة صقر»** في [`web/`](web/) — العبها مباشرة: https://raw.githack.com/3wasfnjd/saqr/main/web/index.html
+
+## نسخة Meta Quest
 
 لعبة واقع مختلط على Meta Quest 3 / 3S من **عبودين قيمز / ABODEN GAMES** — Godot 4.7 + OpenXR + Passthrough، تُبنى APK عبر GitHub Actions. لعبة مستقلة: لا تشارك كودًا ولا ستايلًا مع أي لعبة سابقة.
 
