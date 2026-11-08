@@ -96,6 +96,10 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .bomb-btn > * { transform: skewX(12deg); }
 .bomb-btn:active { filter: brightness(1.3); }
 .bomb-btn .dot { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #555c69, #1b1f27); position: relative; }
+.bomb-btn .dot.art { background: none; width: 24px; height: 34px; border-radius: 0; }
+.bomb-btn .dot.art::after { display: none; }
+.bomb-btn .dot img { display: none; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+.bomb-btn .dot.art img { display: block; }
 .bomb-btn .dot::after { content: ""; position: absolute; top: -5px; left: 13px; width: 3px; height: 8px; background: var(--gold); border-radius: 2px; }
 
 /* ---------- banners ---------- */
@@ -358,7 +362,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
           <div class="hpbar"><i id="hpBar"></i></div>
         </div>
         <div class="score"><small>النقاط</small><b id="scoreTxt">0</b></div>
-        <button class="bomb-btn" id="bombBtn" aria-label="قنبلة"><span class="dot"></span><span class="bomb-n"><small>قنابل</small><b id="bombTxt">2</b></span></button>
+        <button class="bomb-btn" id="bombBtn" aria-label="قنبلة"><span class="dot"><img id="bombIco" alt=""></span><span class="bomb-n"><small>قنابل</small><b id="bombTxt">2</b></span></button>
       </div>
     </div>
     <div id="banners"></div>
@@ -930,6 +934,73 @@ async function loadPlayerArt(onStep) {
   put("giant", "bossGiant", 420, true);
   for (const k of ["medkit", "ammo", "shield", "coin"]) if (imgs[k]) ICON[k] = imgs[k];
   for (const k of ["tTwin", "tWing", "tMini", "rocket", "cannon", "bomb", "flash", "spark", "oPink", "oOrange", "oGold", "oViolet"]) if (imgs["b_" + k]) PIMG[k] = imgs["b_" + k];
+  if (imgs.b_bomb) { const ic = document.getElementById("bombIco"); if (ic) { ic.src = ART.b_bomb; ic.parentNode.classList.add("art"); } }
+  buildPickIcons();
+}
+// ---------------------------------------------------------------- pickup icons
+// Full-colour cel icons (dark outline, two-tone shading, gloss) instead of
+// symbols on a coloured disc. Weapon crates show the weapon's own projectile art.
+const PICON = {};
+const INK = "#15111c";
+function gloss(g, x, y, w, h, r) { g.save(); g.globalAlpha = 0.55; g.fillStyle = "#fff"; g.beginPath(); g.ellipse(x, y, w, h, r, 0, TAU); g.fill(); g.restore(); }
+function rrPath(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
+function drawArt(g, img, cx, cy, h, rot = 0) {
+  if (!img) return; const w = h * img.width / img.height;
+  g.save(); g.translate(cx, cy); g.rotate(rot); g.imageSmoothingQuality = "high"; g.drawImage(img, -w / 2, -h / 2, w, h); g.restore();
+}
+function buildPickIcons() {
+  const S = 60;
+  // repair: first-aid case
+  PICON.repair = sprite(S, S, (g) => {
+    g.lineWidth = 3.2; g.strokeStyle = INK;
+    rrPath(g, -11, -23, 22, 12, 5); g.stroke();                       // handle
+    rrPath(g, -24, -15, 48, 36, 8);
+    const gr = g.createLinearGradient(0, -15, 0, 21); gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.55, "#e9edf3"); gr.addColorStop(1, "#b9c2cf");
+    g.fillStyle = gr; g.fill(); g.stroke();
+    g.fillStyle = "#c92f3b"; g.fillRect(-22.5, 12, 45, 6.5);           // lower band
+    g.beginPath(); g.moveTo(-24, 12); g.lineTo(24, 12); g.lineWidth = 2; g.stroke();
+    g.lineWidth = 2.6; g.beginPath();                                  // cross
+    g.moveTo(-4.5, -11); g.lineTo(4.5, -11); g.lineTo(4.5, -4); g.lineTo(11.5, -4); g.lineTo(11.5, 5); g.lineTo(4.5, 5); g.lineTo(4.5, 12);
+    g.lineTo(-4.5, 12); g.lineTo(-4.5, 5); g.lineTo(-11.5, 5); g.lineTo(-11.5, -4); g.lineTo(-4.5, -4); g.closePath();
+    const cr = g.createLinearGradient(0, -11, 0, 12); cr.addColorStop(0, "#ff5a5f"); cr.addColorStop(1, "#c4222e"); g.fillStyle = cr; g.fill(); g.stroke();
+    gloss(g, -13, -8, 7, 3, -0.3);
+  });
+  // shield: heater shield with steel rim and a star
+  PICON.shield = sprite(S, S, (g) => {
+    const path = (k) => { g.beginPath(); g.moveTo(0, -25 * k); g.quadraticCurveTo(12 * k, -19 * k, 22 * k, -20 * k); g.quadraticCurveTo(24 * k, 8 * k, 0, 26 * k); g.quadraticCurveTo(-24 * k, 8 * k, -22 * k, -20 * k); g.quadraticCurveTo(-12 * k, -19 * k, 0, -25 * k); g.closePath(); };
+    path(1); const rim = g.createLinearGradient(-20, -24, 20, 24); rim.addColorStop(0, "#f4f8ff"); rim.addColorStop(0.5, "#9fb0c6"); rim.addColorStop(1, "#5d6c82");
+    g.fillStyle = rim; g.fill(); g.lineWidth = 3.2; g.strokeStyle = INK; g.stroke();
+    path(0.76); const bl = g.createLinearGradient(0, -20, 0, 20); bl.addColorStop(0, "#5fc4ff"); bl.addColorStop(1, "#1758b8"); g.fillStyle = bl; g.fill();
+    g.lineWidth = 2; g.stroke();
+    g.save(); g.beginPath(); path(0.76); g.clip(); g.fillStyle = "rgba(255,255,255,0.18)"; g.fillRect(-30, -30, 30, 60); g.restore();
+    g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 4.4 : 10; g.lineTo(Math.cos(a) * r, Math.sin(a) * r + 1); } g.closePath();
+    g.fillStyle = "#fff6d6"; g.fill(); g.lineWidth = 2; g.stroke();
+    gloss(g, -9, -13, 6, 2.6, -0.5);
+  });
+  // x2: medal with ribbon tails
+  PICON.x2 = sprite(S, S, (g) => {
+    g.lineWidth = 3; g.strokeStyle = INK;
+    for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(sx * 6, 6); g.lineTo(sx * 15, 27); g.lineTo(sx * 9, 23); g.lineTo(sx * 5, 28); g.lineTo(sx * 0, 8); g.closePath(); g.fillStyle = "#d6418f"; g.fill(); g.stroke(); }
+    g.beginPath(); for (let i = 0; i < 24; i++) { const a = i * Math.PI / 12, r = i % 2 ? 19.5 : 22.5; g.lineTo(Math.cos(a) * r, Math.sin(a) * r - 3); } g.closePath();
+    const go = g.createLinearGradient(-20, -24, 20, 18); go.addColorStop(0, "#fff0a6"); go.addColorStop(0.5, "#ffc531"); go.addColorStop(1, "#d98a09"); g.fillStyle = go; g.fill(); g.stroke();
+    g.beginPath(); g.arc(0, -3, 14.5, 0, TAU); const pk = g.createLinearGradient(0, -17, 0, 11); pk.addColorStop(0, "#ff8acb"); pk.addColorStop(1, "#c42b7c"); g.fillStyle = pk; g.fill(); g.lineWidth = 2.2; g.stroke();
+    g.font = "400 19px Lalezar, system-ui"; g.textAlign = "center"; g.textBaseline = "middle"; g.direction = "ltr";
+    g.lineWidth = 4; g.strokeText("×2", 0, -1.5); g.fillStyle = "#fff"; g.fillText("×2", 0, -1.5);
+    gloss(g, -8, -13, 5, 2.2, -0.5);
+  });
+  // weapon crates: olive ammo case with the weapon's projectiles standing in it
+  const crate = (g, color) => {
+    g.lineWidth = 3; g.strokeStyle = INK;
+    rrPath(g, -22, 2, 44, 22, 5); const cg = g.createLinearGradient(0, 2, 0, 24); cg.addColorStop(0, "#7d8a4a"); cg.addColorStop(1, "#4a5428"); g.fillStyle = cg; g.fill(); g.stroke();
+    g.fillStyle = color; g.fillRect(-20.5, 9, 41, 5); g.lineWidth = 1.6; g.strokeRect(-20.5, 9, 41, 5);
+    g.fillStyle = "#2b3016"; g.fillRect(-15, 17, 4, 4); g.fillRect(11, 17, 4, 4);
+  };
+  const W = { rockets: (g) => { drawArt(g, PIMG.rocket, -8, -6, 40, -0.12); drawArt(g, PIMG.rocket, 8, -6, 40, 0.12); },
+              minigun: (g) => { for (const [x, r] of [[-9, -0.1], [-3, -0.03], [3, 0.03], [9, 0.1]]) drawArt(g, PIMG.tMini, x, -10, 34, r); },
+              cannon:  (g) => { drawArt(g, PIMG.cannon, 0, -9, 40, 0); },
+              wing:    (g) => { for (const [x, r] of [[-11, -0.28], [0, 0], [11, 0.28]]) drawArt(g, PIMG.tWing, x, -9, 32, r); } };
+  for (const w of Object.keys(W)) PICON["w_" + w] = sprite(S, S, (g) => { g.save(); g.beginPath(); g.rect(-30, -30, 60, 40); g.clip(); W[w](g); g.restore(); crate(g, (WEAPONS[w] && WEAPONS[w].color) || "#ffd166"); });
+  if (PIMG.bomb) PICON.bomb = sprite(S, S, (g) => drawArt(g, PIMG.bomb, 0, 0, 56, 0));
 }
 const FX = {};
 function glowSprite(color, size = 64, core = 0.15) {
@@ -1806,6 +1877,17 @@ function drawPickup(k) {
     ctx.beginPath(); ctx.arc(0, 0, 9.5, 0, TAU); ctx.fillStyle = a.c2; ctx.fill(); ctx.lineWidth = 1.8; ctx.strokeStyle = "#7a4c00"; ctx.stroke();
     ctx.beginPath(); ctx.arc(0, 0, 6, 0, TAU); ctx.fillStyle = a.c1; ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.fillRect(-2.5, -5, 2, 4);
+    ctx.restore(); return;
+  }
+  const pic = k.kind === "weapon" ? PICON["w_" + k.w] : PICON[k.kind];
+  if (pic) {
+    // thin orbiting arc in the pickup's colour, then the icon itself, gently tilting
+    ctx.strokeStyle = a.c1; ctx.lineWidth = 2; ctx.globalAlpha = 0.7;
+    ctx.beginPath(); ctx.arc(0, 0, 34, k.t * 2.2, k.t * 2.2 + TAU * 0.5); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.rotate(Math.sin(k.t * 2.1) * 0.12);
+    const sc = 1 + Math.sin(k.t * 4) * 0.04, d = 60 * sc;
+    ctx.globalAlpha = 0.35; ctx.drawImage(pic.shadow, -d / 2 + 3, -d / 2 + 5, d, d); ctx.globalAlpha = 1;
+    ctx.drawImage(pic.c, -d / 2, -d / 2, d, d);
     ctx.restore(); return;
   }
   ctx.strokeStyle = a.c1; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.9;
