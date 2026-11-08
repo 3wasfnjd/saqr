@@ -152,8 +152,6 @@ func _glass_board(w: float, h: float, title: String) -> void:
 	shape(self, rrect(w + 0.02, h + 0.02, r + 0.01, 8), Vector3(0.0, -0.018, -0.012), Color(0, 0, 0, 0.32), 0.001)
 	shape(self, rrect(w + 0.007, h + 0.007, r + 0.0035, 8), Vector3(0, 0, -0.004), pal.edge, 0.002)
 	grad_shape(self, rrect(w, h, r, 8), Vector3(0, 0, -0.002), pal.top, pal.bottom, h, true, 0.002)
-	# Sheen: a lighter band over the top ~45%.
-	shape(self, rrect(w - 0.012, h * 0.44, r - 0.004, 8), Vector3(0, h * 0.5 - h * 0.22 - 0.006, 0.0002), Color(1, 1, 1, 0.07), 0.0004)
 	if title != "":
 		var ty := h * 0.5 - 0.06
 		var lt := label(title, Vector2(0, ty), 66, pal.ink, "bold")
@@ -520,17 +518,17 @@ func _glass_button(text: String, center: Vector2, bsize: Vector2, action: Callab
 		mi = grad_shape(node, outline, Vector3.ZERO, HOT_B, HOT_A, bsize.x, false, 0.004)
 	else:
 		mi = shape(node, outline, Vector3.ZERO, color, 0.004)
-	# Thin sheen along the top edge.
-	shape(node, rrect(bsize.x - r * 1.2, 0.004, 0.002, 3), Vector3(0, bsize.y * 0.5 - 0.006, 0.0025), Color(1, 1, 1, 0.22), 0.0005)
+	# Thin sheen along the top edge (opaque: see-through bits misdraw over the room).
+	shape(node, rrect(bsize.x - r * 1.2, 0.004, 0.002, 3), Vector3(0, bsize.y * 0.5 - 0.006, 0.0025), (HOT_A if kind == "primary" else color).lerp(Color.WHITE, 0.3), 0.0005)
 	var l: Label3D = null
 	var tx := 0.0
 	if numbered and kind != "ghost" and kind != "pin" and bsize.x > 0.2:
 		_num += 1
 		var pc := Vector2(sx(-bsize.x * 0.5 + 0.042), 0.0)
 		var cyan := Color(0.56, 0.89, 1.0)
-		shape(node, rrect(0.054, 0.032, 0.016, 5), Vector3(pc.x, 0, 0.0026), Color(1, 1, 1, 0.75) if kind == "primary" else cyan, 0.0006)
-		shape(node, rrect(0.048, 0.026, 0.013, 5), Vector3(pc.x, 0, 0.0029), color.lerp(Color.WHITE, 0.12) if kind != "primary" else Color(0.97, 0.36, 0.42), 0.0006)
-		var nl := label("%02d" % _num, pc, 30, Color.WHITE if kind == "primary" else cyan, "bold", HORIZONTAL_ALIGNMENT_CENTER, 0.0, node)
+		shape(node, rrect(0.06, 0.036, 0.018, 5), Vector3(pc.x, 0, 0.0026), Color(1.0, 0.86, 0.86) if kind == "primary" else cyan, 0.0006)
+		shape(node, rrect(0.054, 0.03, 0.015, 5), Vector3(pc.x, 0, 0.0029), color.lerp(Color.WHITE, 0.12) if kind != "primary" else Color(0.97, 0.36, 0.42), 0.0006)
+		var nl := label("%02d" % _num, pc, 36, Color.WHITE if kind == "primary" else cyan, "bold", HORIZONTAL_ALIGNMENT_CENTER, 0.0, node)
 		nl.position.z = 0.0065
 		nl.outline_size = 0
 	if icon_kind != "":

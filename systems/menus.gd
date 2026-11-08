@@ -170,10 +170,12 @@ func _main() -> void:
 	# v1.7 (as on the web): peach title with a soft dark shadow, tagline in a glass pill.
 	tilt = 0.0
 	var sh := p.label(Lang.t("game"), Vector2(0.004, 0.236), 290, Color(0.04, 0.12, 0.18), "title")
-	sh.position.z = 0.003
+	sh.position.z = 0.002
 	sh.outline_size = 0
+	sh.render_priority = 26
 	var t := p.label(Lang.t("game"), Vector2(0, 0.243), 290, Color(1.0, 0.84, 0.68), "title")
 	t.rotation.z = tilt
+	t.position.z = 0.006
 	Panel3D.shape(p, Panel3D.rrect(0.33, 0.046, 0.023, 6), Vector3(0, 0.124, 0.0008), p.pal.edge, 0.0006)
 	Panel3D.shape(p, Panel3D.rrect(0.326, 0.042, 0.021, 6), Vector3(0, 0.124, 0.0012), p.inset, 0.0006)
 	p.label(("SAQR" if Lang.code() == "ar" else "صقر") + "  ·  " + Lang.t("tagline"), Vector2(0, 0.124), 36, p.ink, "bold")
