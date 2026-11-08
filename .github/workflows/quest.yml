@@ -64,6 +64,16 @@ jobs:
           done
           timeout 200 xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --xr-mode off --audio-driver Dummy --rendering-method gl_compatibility --resolution 800x600 -s tools/look.gd -- build/previews/models
           ls -R build/previews
+      - name: Push desktop previews to the 'previews' branch (so they can be reviewed without artifact downloads)
+        if: github.event_name != 'pull_request'
+        run: |
+          set -e
+          rm -rf /tmp/pv && mkdir -p /tmp/pv && cp -r build/previews/. /tmp/pv/
+          cd /tmp/pv
+          git init -q -b previews
+          git config user.name "saqr-ci"; git config user.email "saqr-ci@users.noreply.github.com"
+          git add -A && git commit -qm "previews for ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" previews
       - name: Export native ARM64 Android APK
         run: godot --headless --xr-mode off --path . --install-android-build-template --export-debug Quest build/SAQR-Quest-v1.7.0.apk
       - name: Verify manifest, ABI, splash, and certificate
