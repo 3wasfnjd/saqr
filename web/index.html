@@ -8,13 +8,13 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Changa:wght@500;700;800&family=Lalezar&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800;900&family=Lalezar&display=swap">
 <style>
 /* Layout: one portrait play column centred in the viewport; menus are dark
    gunmetal slabs with rounded slanted tabs laid over the live sea. */
 :root {
   --ink: #f4f6fb;
-  --dim: #98a3b6;
+  --dim: #0a0f18;
   --slab: #161b24;
   --slab-2: #1f2633;
   --tab: #2a3242;
@@ -23,8 +23,8 @@
   --gold: #ffc53d;
   --teal: #1f6f78;
   --edge: #07090d;
-  --display: "Lalezar", "Changa", system-ui, sans-serif;
-  --body: "Changa", system-ui, sans-serif;
+  --display: "Lalezar", "Tajawal", system-ui, sans-serif;
+  --body: "Tajawal", system-ui, sans-serif;
   color-scheme: dark;
 }
 html, body { height: 100%; }
@@ -1757,7 +1757,7 @@ function draw() {
       const u = t.t / 1.1, sc = t.t < 0.12 ? 0.6 + t.t / 0.12 * 0.6 : 1.2 - Math.min(0.2, (t.t - 0.12) * 0.6);
       ctx.save(); ctx.translate(t.x, t.y); ctx.scale(sc, sc);
       ctx.globalAlpha = 1 - u * u; ctx.direction = /[؀-ۿ]/.test(t.text) ? "rtl" : "ltr";
-      ctx.font = t.big ? "400 26px Lalezar, Changa, system-ui" : "400 19px Lalezar, Changa, system-ui"; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(10,8,14,0.75)"; ctx.lineJoin = "round";
+      ctx.font = t.big ? "400 26px Lalezar, Tajawal, system-ui" : "400 19px Lalezar, Tajawal, system-ui"; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(10,8,14,0.75)"; ctx.lineJoin = "round";
       ctx.strokeText(t.text, 0, 0); ctx.fillStyle = t.color; ctx.fillText(t.text, 0, 0);
       ctx.restore();
     }
@@ -2002,7 +2002,7 @@ function drawAmmo(p) {
   ctx.globalAlpha = 0.07 * flick; ctx.fillStyle = col; for (let i = 3; i < h; i += 4) ctx.fillRect(2, i, w - 4, 1); ctx.globalAlpha = 0.14 * flick; ctx.fillRect(0, 0, w, h); ctx.globalAlpha = flick;
   ctx.strokeStyle = col; ctx.lineWidth = 2.6;
   for (const [cx, cy, dx, dy] of [[-4, -4, 1, 1], [w + 4, -4, -1, 1], [-4, h + 4, 1, -1], [w + 4, h + 4, -1, -1]]) { ctx.beginPath(); ctx.moveTo(cx + dx * 14, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, cy + dy * 14); ctx.stroke(); }
-  ctx.direction = "rtl"; ctx.textAlign = "right"; ctx.fillStyle = col; ctx.font = "700 11px Changa, system-ui";
+  ctx.direction = "rtl"; ctx.textAlign = "right"; ctx.fillStyle = col; ctx.font = "700 11px Tajawal, system-ui";
   ctx.fillText(WEAPONS[p.weapon].name, w - 9, 15);
   ctx.direction = "ltr"; ctx.textAlign = "right"; ctx.fillStyle = "#fff6d8"; ctx.font = "400 30px Lalezar, system-ui";
   ctx.fillText(String(Math.max(0, Math.ceil(p.ammo))), w - 10, 46);
@@ -2020,7 +2020,7 @@ function drawBossBar(b) {
   b.shownHp = lerp(b.shownHp ?? b.hp, b.hp, 0.08);
   ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.beginPath(); ctx.roundRect(x, y + 2, Math.max(0, w * b.shownHp / b.maxHp), 9, 5); ctx.fill();
   ctx.fillStyle = b.hp < b.maxHp * 0.5 ? "#ff5a55" : "#ffb020"; ctx.beginPath(); ctx.roundRect(x, y + 2, Math.max(0, w * b.hp / b.maxHp), 9, 5); ctx.fill();
-  ctx.direction = "rtl"; ctx.textAlign = "center"; ctx.fillStyle = "#f4f6fb"; ctx.font = "700 12px Changa, system-ui";
+  ctx.direction = "rtl"; ctx.textAlign = "center"; ctx.fillStyle = "#f4f6fb"; ctx.font = "700 12px Tajawal, system-ui";
   ctx.fillText(b.name || BOSS_NAMES[b.kind], W / 2, y - 4);
 }
 
