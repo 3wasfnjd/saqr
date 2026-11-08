@@ -1,12 +1,12 @@
 class_name UI
 extends RefCounted
-## SAQR's own look: Lalezar poster titles, Changa text, flat icons. The panel
+## SAQR's own look: Lalezar poster titles, Tajawal text (same as the web version), flat icons. The panel
 ## menus live in panel.gd / menus.gd; this file has the shared text helpers.
 
 static var _fonts: Dictionary = {}
 
 
-## "title" (Lalezar), "body" (Changa 600) or "bold" (Changa 800).
+## "title" (Lalezar), "body" (Tajawal Bold) or "bold" (Tajawal ExtraBold).
 ## Glyphs are multichannel signed-distance fields: in the headset text is
 ## always shrunk and moving with your head, and plain bitmap glyphs (no
 ## mipmaps) shimmer and break up. MSDF stays sharp at any size and distance.
@@ -21,11 +21,8 @@ static func font(kind: String = "bold") -> Font:
 			f.load_dynamic_font("res://assets/fonts/Lalezar-Regular.ttf")
 			_fonts[kind] = f
 		else:
-			f.load_dynamic_font("res://assets/fonts/Changa.ttf")
-			var v := FontVariation.new()
-			v.base_font = f
-			v.variation_opentype = {"wght": 800 if kind == "bold" else 600}
-			_fonts[kind] = v
+			f.load_dynamic_font("res://assets/fonts/Tajawal-ExtraBold.ttf" if kind == "bold" else "res://assets/fonts/Tajawal-Bold.ttf")
+			_fonts[kind] = f
 	return _fonts[kind]
 
 

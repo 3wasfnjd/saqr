@@ -147,7 +147,7 @@ func _tick_haptic(amp: float, dur: float) -> void:
 		hand.trigger_haptic_pulse("haptic", 0.0, amp, dur, 0.0)
 
 
-func _new(w: float, h: float, title: String = "", header: Color = Panel3D.HEADER, style: String = "strike") -> Panel3D:
+func _new(w: float, h: float, title: String = "", header: Color = Panel3D.HEADER, style: String = "glass") -> Panel3D:
 	panel = Panel3D.new()
 	add_child(panel)
 	panel.setup(w, h, title, header, style)
@@ -167,13 +167,16 @@ func _main() -> void:
 	var p := _new(0.78, 0.8)
 	# Big slanted title with a red shadow, a skewed red bar and the tagline.
 	var tilt := 0.06 if Lang.code() != "ar" else -0.06
-	var sh := p.label(Lang.t("game"), Vector2(0.007, 0.236), 290, Color(0.75, 0.12, 0.14), "title")
+	# v1.7 (as on the web): peach title with a soft dark shadow, tagline in a glass pill.
+	tilt = 0.0
+	var sh := p.label(Lang.t("game"), Vector2(0.004, 0.236), 290, Color(0.04, 0.12, 0.18), "title")
 	sh.position.z = 0.003
-	sh.rotation.z = tilt
-	var t := p.label(Lang.t("game"), Vector2(0, 0.243), 290, p.ink, "title")
+	sh.outline_size = 0
+	var t := p.label(Lang.t("game"), Vector2(0, 0.243), 290, Color(1.0, 0.84, 0.68), "title")
 	t.rotation.z = tilt
-	Panel3D.shape(p, Panel3D.skew(0.36, 0.012, 0.014), Vector3(0, 0.148, 0.001), p.accent, 0.0008)
-	p.label(("SAQR" if Lang.code() == "ar" else "صقر") + "  ·  " + Lang.t("tagline"), Vector2(0, 0.118), 40, p.dim, "bold")
+	Panel3D.shape(p, Panel3D.rrect(0.33, 0.046, 0.023, 6), Vector3(0, 0.124, 0.0008), p.pal.edge, 0.0006)
+	Panel3D.shape(p, Panel3D.rrect(0.326, 0.042, 0.021, 6), Vector3(0, 0.124, 0.0012), p.inset, 0.0006)
+	p.label(("SAQR" if Lang.code() == "ar" else "صقر") + "  ·  " + Lang.t("tagline"), Vector2(0, 0.124), 36, p.ink, "bold")
 	var mini := Models.player_plane(0.0012)
 	var model: Node3D = mini.root
 	model.scale = Vector3.ONE * 0.42
@@ -204,7 +207,7 @@ func _next_mission() -> int:
 
 ## The campaign as an operations map: pins along a dashed flight route.
 func _missions() -> void:
-	var p := _new(1.02, 0.88, Lang.t("campaign"), Panel3D.HEADER, "map")
+	var p := _new(1.02, 0.88, Lang.t("campaign"), Panel3D.HEADER, "glass")
 	var ids := Missions.ids()
 	var nxt := _next_mission()
 	var pts: Array[Vector2] = []
@@ -312,7 +315,7 @@ func _start(i: int) -> void:
 
 
 func _hangar(tab: String) -> void:
-	var p := _new(1.04, 0.74, Lang.t("hangar"), Panel3D.HEADER, "blueprint")
+	var p := _new(1.04, 0.74, Lang.t("hangar"), Panel3D.HEADER, "glass")
 	_wallet(p, Vector2(p.sx(-0.36), 0.225))
 	var tabs := [["upgrades", Lang.t("upgrades")], ["weapons", Lang.t("weapons")]]
 	p.choice(Vector2(p.sx(0.27), 0.225), Vector2(0.4, 0.06), tabs, tab, func(v): open("hangar", {"tab": v, "back": args.get("back", ""), "index": args.get("index", 0)}, true))

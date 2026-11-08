@@ -22,6 +22,10 @@ const DARK_TEXT := Color(0.12, 0.09, 0.06)
 const PX := 0.00046       # metres per font pixel (48 px ≈ 2.2 cm, ≈1.3° at 1 m)
 
 const STYLES := {
+	# v1.7 default, matching the web version's menus: a teal "glass" slab with a
+	# light rim and a top sheen, soft rounded buttons, an orange→pink primary,
+	# cyan number pills, white titles and near-black secondary text.
+	"glass": {"bg": Color(0.18, 0.4, 0.51), "top": Color(0.29, 0.54, 0.65), "bottom": Color(0.11, 0.28, 0.4), "edge": Color(0.64, 0.84, 0.93), "inset": Color(0.25, 0.48, 0.59), "ink": Color(0.98, 0.99, 1.0), "dim": Color(0.03, 0.06, 0.09), "accent": Color(0.95, 0.3, 0.42), "star": Color(1.0, 0.78, 0.2), "btn": Color(0.34, 0.58, 0.68), "line": Color(0.72, 0.9, 0.97, 0.6), "hover": Color(0.46, 0.7, 0.8), "sel": Color(0.95, 0.36, 0.42), "dark_sel": false},
 	# SAQR's own "strike" look: dark gunmetal board, slanted tabs, red accent.
 	"strike": {"bg": Color(0.085, 0.1, 0.14), "edge": Color(0.03, 0.035, 0.05), "inset": Color(0.12, 0.145, 0.19), "ink": Color(0.96, 0.97, 0.99), "dim": Color(0.6, 0.65, 0.73), "accent": Color(0.93, 0.2, 0.22), "star": Color(1.0, 0.76, 0.16), "btn": Color(0.17, 0.2, 0.26), "line": Color(0.32, 0.38, 0.48, 0.6), "hover": Color(0.93, 0.2, 0.22), "sel": Color(0.93, 0.2, 0.22), "dark_sel": false},
 	"poster": {"bg": Color(0.95, 0.9, 0.78), "edge": Color(0.2, 0.24, 0.16), "inset": Color(0.88, 0.82, 0.68), "ink": Color(0.2, 0.14, 0.09), "dim": Color(0.48, 0.42, 0.34), "accent": Color(0.72, 0.14, 0.1), "star": Color(0.95, 0.62, 0.06), "btn": Color(0.3, 0.36, 0.22), "line": Color(0.72, 0.14, 0.1, 0.45), "hover": Color(1.0, 0.72, 0.18), "sel": Color(1.0, 0.72, 0.18), "dark_sel": true},
@@ -36,8 +40,8 @@ var hovered: Dictionary = {}
 var dragging: Dictionary = {}
 var open_t: float = 0.0
 var rtl: bool = true
-var style: String = "strike"
-var pal: Dictionary = STYLES.strike
+var style: String = "glass"
+var pal: Dictionary = STYLES.glass
 var numbered: bool = false      # list buttons get 01 / 02 / 03 tabs
 var _num: int = 0
 var ink: Color = STYLES.poster.ink
@@ -48,7 +52,7 @@ var _press_lock: float = 0.25
 var anims: Array = []          # {node, kind: "pulse"|"orbit", ...}
 
 
-func setup(w: float, h: float, title: String = "", header: Color = HEADER, board_style: String = "strike") -> Panel3D:
+func setup(w: float, h: float, title: String = "", header: Color = HEADER, board_style: String = "glass") -> Panel3D:
 	size = Vector2(w, h)
 	style = board_style
 	pal = STYLES.get(style, STYLES.strike)
@@ -58,6 +62,9 @@ func setup(w: float, h: float, title: String = "", header: Color = HEADER, board
 	inset = pal.inset
 	rtl = Lang.code() == "ar"
 	scale = Vector3.ONE * 0.92
+	if style == "glass":
+		_glass_board(w, h, title)
+		return self
 	if style in ["strike", "map", "blueprint"]:
 		_strike_board(w, h, title, header)
 		if style == "blueprint":
@@ -96,6 +103,62 @@ func setup(w: float, h: float, title: String = "", header: Color = HEADER, board
 	if title != "":
 		_ribbon(title, h * 0.5 - 0.055, minf(w * 0.7, 0.62), header)
 	return self
+
+
+# Orange → pink, the web version's primary button.
+const HOT_A := Color(1.0, 0.55, 0.33)
+const HOT_B := Color(0.93, 0.22, 0.43)
+const GRAD_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_always, cull_disabled, shadows_disabled;
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform vec4 albedo_b : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform float span = 1.0;
+uniform bool vertical = false;
+varying float g;
+void vertex() { g = vertical ? -VERTEX.z : VERTEX.x; }
+void fragment() {
+	float t = clamp(g / span + 0.5, 0.0, 1.0);
+	vec4 c = mix(albedo_b, albedo, t);
+	ALBEDO = c.rgb;
+	ALPHA = c.a;
+}
+"""
+static var _grad_shader: Shader
+
+
+## A flat shape whose colour runs from `b` (left / bottom) to `a` (right / top).
+## Its "albedo" parameter is `a`, so hover tinting still works on it.
+static func grad_shape(parent: Node3D, pts: PackedVector2Array, pos: Vector3, a: Color, b: Color, span: float, vertical: bool, depth: float = 0.002) -> MeshInstance3D:
+	var mi := shape(parent, pts, pos, a, depth)
+	if _grad_shader == null:
+		_grad_shader = Shader.new()
+		_grad_shader.code = GRAD_SHADER
+	var m := ShaderMaterial.new()
+	m.shader = _grad_shader
+	m.set_shader_parameter("albedo", a)
+	m.set_shader_parameter("albedo_b", b)
+	m.set_shader_parameter("span", span)
+	m.set_shader_parameter("vertical", vertical)
+	mi.material_override = m
+	return mi
+
+
+## The "glass" board (v1.7): soft shadow, a light rim, a top-to-bottom teal
+## gradient, a sheen over the top part, a centred white title with a short
+## orange→pink underline. Opaque on purpose: see-through panels show the room.
+func _glass_board(w: float, h: float, title: String) -> void:
+	var r := 0.05
+	shape(self, rrect(w + 0.02, h + 0.02, r + 0.01, 8), Vector3(0.0, -0.018, -0.012), Color(0, 0, 0, 0.32), 0.001)
+	shape(self, rrect(w + 0.007, h + 0.007, r + 0.0035, 8), Vector3(0, 0, -0.004), pal.edge, 0.002)
+	grad_shape(self, rrect(w, h, r, 8), Vector3(0, 0, -0.002), pal.top, pal.bottom, h, true, 0.002)
+	# Sheen: a lighter band over the top ~45%.
+	shape(self, rrect(w - 0.012, h * 0.44, r - 0.004, 8), Vector3(0, h * 0.5 - h * 0.22 - 0.006, 0.0002), Color(1, 1, 1, 0.07), 0.0004)
+	if title != "":
+		var ty := h * 0.5 - 0.06
+		var lt := label(title, Vector2(0, ty), 66, pal.ink, "bold")
+		lt.position.z = 0.006
+		grad_shape(self, rrect(0.07, 0.008, 0.004, 4), Vector3(0, ty - 0.042, 0.001), HOT_B, HOT_A, 0.07, false, 0.0008)
 
 
 ## The "strike" board: a dark slab with cut corners, a red edge stripe on
@@ -260,7 +323,9 @@ func _process(delta: float) -> void:
 			w.hover = move_toward(w.hover, target, delta * 8.0)
 			var base: Color = w.color
 			var hov: Color = pal.hover if base != pal.hover else Color(pal.hover).lightened(0.25)
-			var c := base.lerp(hov, w.hover * (0.0 if w.selected else 1.0)) if w.enabled else (DISABLED if not style in ["blueprint", "strike", "map"] else Color(pal.btn).lerp(pal.bg, 0.5))
+			if style == "glass":
+				hov = base.lightened(0.2)
+			var c := base.lerp(hov, w.hover * (0.0 if w.selected else 1.0)) if w.enabled else (DISABLED if not style in ["blueprint", "strike", "map", "glass"] else Color(pal.btn).lerp(pal.bg, 0.5))
 			if w.get("chev"):
 				(w.chev as Node3D).scale = Vector3.ONE * maxf(0.001, w.hover)
 				(w.chev as Node3D).position.x = sx(-(w.rect as Rect2).size.x * 0.5 - 0.02 - 0.012 * w.hover)
@@ -272,7 +337,7 @@ func _process(delta: float) -> void:
 			if w.label:
 				var dark: bool = ((w.hover > 0.5 and not w.selected) or w.selected) and bool(pal.get("dark_sel", true))
 				(w.label as Label3D).modulate = DARK_TEXT if dark and w.enabled else (TEXT if w.enabled else Color(0.4, 0.38, 0.34))
-				(w.label as Label3D).outline_size = 0 if dark else 6
+				(w.label as Label3D).outline_size = 0 if dark else (3 if style == "glass" else 6)
 
 
 # --- building blocks -------------------------------------------------------------------------
@@ -334,6 +399,10 @@ func label(text: String, pos: Vector2, px: int, color: Color, font: String = "bo
 	var light := color.get_luminance() > 0.55
 	l.outline_size = (6 if font != "title" else 14) if light else 0
 	l.outline_modulate = Color(0.06, 0.05, 0.04)
+	if style == "glass" and light and font != "title":
+		# Glass: a thin soft navy edge instead of a heavy ink outline.
+		l.outline_size = 3
+		l.outline_modulate = Color(0.02, 0.08, 0.13, 0.75)
 	l.render_priority = 30
 	l.outline_render_priority = 29
 	l.horizontal_alignment = align
@@ -382,6 +451,8 @@ func button(text: String, center: Vector2, bsize: Vector2, action: Callable, sty
 	var node := Node3D.new()
 	node.position = Vector3(center.x, center.y, 0.002)
 	add_child(node)
+	if self.style == "glass":
+		return _glass_button(text, center, bsize, action, style, icon_kind, px, enabled, node)
 	var strike: bool = self.style in ["strike", "map", "blueprint"]
 	var color: Color = (pal.hover if strike else PRIMARY) if style == "primary" else (Color(pal.btn).lerp(pal.edge, 0.35) if style == "ghost" else pal.btn)
 	# A stencilled dog-tag: clipped corners, a printed shadow under it.
@@ -423,6 +494,53 @@ func button(text: String, center: Vector2, bsize: Vector2, action: Callable, sty
 		l = label(text, Vector2(tx, 0.002), px, TEXT, "bold", HORIZONTAL_ALIGNMENT_CENTER, 0.0, node)
 		l.position.z = 0.006
 	var w := {"kind": "button", "rect": Rect2(center - bsize * 0.5, bsize), "node": node, "mat": mat, "color": color, "hover": 0.0, "action": action, "enabled": enabled, "label": l, "selected": false, "press": 0.0, "chev": chev}
+	widgets.append(w)
+	return w
+
+
+## Glass button: rounded pill with a light rim; primary is orange→pink;
+## numbered list buttons get a cyan "01" pill at the reading-start side.
+func _glass_button(text: String, center: Vector2, bsize: Vector2, action: Callable, kind: String, icon_kind: String, px: int, enabled: bool, node: Node3D) -> Dictionary:
+	var r := minf(bsize.y * 0.34, 0.024)
+	var outline := rrect(bsize.x, bsize.y, r, 7)
+	var rim := Color(0.62, 0.82, 0.9)
+	var color: Color = pal.btn
+	if kind == "ghost":
+		color = Color(0.22, 0.43, 0.54)
+		rim = Color(0.48, 0.7, 0.8)
+	elif kind == "primary":
+		color = HOT_B
+		rim = Color(1.0, 0.72, 0.68)
+	elif kind == "pin":
+		r = bsize.x * 0.5
+		outline = rrect(bsize.x, bsize.y, r, 7)
+	shape(node, rrect(bsize.x + 0.005, bsize.y + 0.005, r + 0.0025, 7), Vector3(0, 0, -0.001), rim, 0.003)
+	var mi: MeshInstance3D
+	if kind == "primary":
+		mi = grad_shape(node, outline, Vector3.ZERO, HOT_B, HOT_A, bsize.x, false, 0.004)
+	else:
+		mi = shape(node, outline, Vector3.ZERO, color, 0.004)
+	# Thin sheen along the top edge.
+	shape(node, rrect(bsize.x - r * 1.2, 0.004, 0.002, 3), Vector3(0, bsize.y * 0.5 - 0.006, 0.0025), Color(1, 1, 1, 0.22), 0.0005)
+	var l: Label3D = null
+	var tx := 0.0
+	if numbered and kind != "ghost" and kind != "pin" and bsize.x > 0.2:
+		_num += 1
+		var pc := Vector2(sx(-bsize.x * 0.5 + 0.042), 0.0)
+		var cyan := Color(0.56, 0.89, 1.0)
+		shape(node, rrect(0.054, 0.032, 0.016, 5), Vector3(pc.x, 0, 0.0026), Color(1, 1, 1, 0.75) if kind == "primary" else cyan, 0.0006)
+		shape(node, rrect(0.048, 0.026, 0.013, 5), Vector3(pc.x, 0, 0.0029), color.lerp(Color.WHITE, 0.12) if kind != "primary" else Color(0.97, 0.36, 0.42), 0.0006)
+		var nl := label("%02d" % _num, pc, 30, Color.WHITE if kind == "primary" else cyan, "bold", HORIZONTAL_ALIGNMENT_CENTER, 0.0, node)
+		nl.position.z = 0.0065
+		nl.outline_size = 0
+	if icon_kind != "":
+		var ix := sx(-bsize.x * 0.5 + bsize.y * 0.5) if text != "" else 0.0
+		icon(icon_kind, Vector2(ix, 0), bsize.y * 0.46, TEXT if enabled else DIM, node)
+		tx = sx(bsize.y * 0.3) if text != "" else 0.0
+	if text != "":
+		l = label(text, Vector2(tx, 0.002), px, TEXT, "bold", HORIZONTAL_ALIGNMENT_CENTER, 0.0, node)
+		l.position.z = 0.006
+	var w := {"kind": "button", "rect": Rect2(center - bsize * 0.5, bsize), "node": node, "mat": mi.material_override, "color": color, "hover": 0.0, "action": action, "enabled": enabled, "label": l, "selected": false, "press": 0.0, "chev": null}
 	widgets.append(w)
 	return w
 
