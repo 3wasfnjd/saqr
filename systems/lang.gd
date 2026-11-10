@@ -107,6 +107,8 @@ const S := {
 	"reset_progress": ["مسح التقدم", "Reset progress"],
 	"confirm_reset": ["متأكد؟ اضغط مرة ثانية", "Sure? Press again"],
 	"flight_mode": ["نمط الطيران", "Flight mode"],
+	"plane_size": ["حجم الطيارة", "Plane size"],
+	"huge": ["ضخمة ×8", "Huge ×8"],
 	"pro": ["احترافي", "Pro"],
 	"stick_hand": ["يد عصا الطيران", "Flight stick hand"],
 	"right": ["اليمنى", "Right"],

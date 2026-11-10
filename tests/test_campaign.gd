@@ -91,6 +91,15 @@ func _run() -> void:
 	battle.build(head, plane, hud)
 	battle.on_room_ready({"floor_y": 0.0, "ceiling_y": 5.0, "walls": [], "openings": [], "surfaces": [], "blocks": [], "found": false, "free": true})
 
+	print("STAGE: plane size + free sky")
+	var g0 := plane.gear_height
+	plane.set_size(4.0)
+	assert(is_equal_approx(plane.radius(), WarMath.PLANE_RADIUS * 4.0) and is_equal_approx(plane.gear_height, g0 * 4.0), "plane size scales hit box and wheels")
+	plane.set_size(1.0)
+	assert(is_equal_approx(plane.gear_height, g0))
+	var bx: Dictionary = battle.box
+	assert((bx.max as Vector3).x - (bx.min as Vector3).x >= 79.0 and (bx.max as Vector3).y >= 11.9, "free flight: wide open sky")
+
 	print("STAGE: menus")
 	assert(battle.phase == Battle.Phase.MENU and menus.screen == "main", "main menu on the board")
 	assert(_press(Lang.t("missions_map")) and menus.screen == "missions")

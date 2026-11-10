@@ -1,5 +1,5 @@
 import hashlib,json,os,pathlib,re,subprocess,zipfile,xml.etree.ElementTree as ET
-p=pathlib.Path('build/SAQR-Quest-v1.7.0.apk')
+p=pathlib.Path('build/SAQR-Quest-v1.8.0.apk')
 sdk=pathlib.Path(os.environ['ANDROID_HOME'])
 analyzer=sdk/'cmdline-tools/latest/bin/apkanalyzer'
 xml=subprocess.check_output([str(analyzer),'manifest','print',str(p)],text=True)
@@ -14,6 +14,7 @@ assert meta.get('com.oculus.ossplash')=='true'
 features={f.get(a+'name'):f for f in r.findall('uses-feature')}
 assert features['android.hardware.vr.headtracking'].get(a+'required')=='true'
 assert features['com.oculus.feature.PASSTHROUGH'].get(a+'required')=='true'
+assert features['com.oculus.feature.BOUNDARYLESS_APP'].get(a+'required')=='true', 'boundaryless (walk freely with passthrough)'
 permissions=[m.get(a+'name') for m in r.findall('uses-permission')]
 # Open-floor build: no room scan, so no spatial-data permission is wanted.
 scene_permission='com.oculus.permission.USE_SCENE' in permissions

@@ -58,6 +58,8 @@ var locks: Array = []
 var hit_flash: float = 0.0
 var velocity: Vector3 = Vector3.ZERO
 var gear_height: float = WarMath.GEAR_HEIGHT
+var size: float = 1.0              # v1.8: plane size from Settings (1× … 8×)
+var _base_gear: float = WarMath.GEAR_HEIGHT
 var _rpm: float = 0.0
 var _gun_cd: float = 0.0
 var _barrel: int = 0
@@ -85,6 +87,7 @@ func _ready() -> void:
 	model = Models.player_plane(0.0018) if Models.has_player_model() else Models.fighter(Models.PLAYER, 0.0022)
 	(model.root as Node3D).scale = Vector3.ONE * WarMath.PLANE_SCALE
 	gear_height = float(model.get("gear_height", WarMath.GEAR_HEIGHT)) * WarMath.PLANE_SCALE
+	_base_gear = gear_height
 	add_child(model.root)
 	_shadow = Toon.shadow_blob(0.22)
 	add_child(_shadow)
@@ -176,6 +179,26 @@ func start_engine() -> void:
 		_engine.play()
 
 
+## Grow or shrink the plane (Settings → plane size). Hit box, wheels, shadow
+## and speed follow; a bigger plane also flies a little faster (√size).
+func set_size(s: float) -> void:
+	s = clampf(s, 1.0, 8.0)
+	if is_equal_approx(s, size):
+		return
+	size = s
+	if model.has("root"):
+		(model.root as Node3D).scale = Vector3.ONE * WarMath.PLANE_SCALE * size
+	var old := gear_height
+	gear_height = _base_gear * size
+	if flight.ground:
+		flight.pos.y += gear_height - old
+		_apply_pose()
+
+
+func radius() -> float:
+	return WarMath.PLANE_RADIUS * size
+
+
 func alive() -> bool:
 	return state == State.FLYING
 
@@ -248,6 +271,14 @@ func _fly(delta: float, inp: Dictionary) -> void:
 		step.roll = 0.0
 	var was_ground: bool = flight.ground
 	var r := WarMath.easy_fly(flight, step, delta, under, gear_height) if easy_flight else WarMath.rc_fly(flight, step, delta, under, gear_height)
+	if size > 1.01:
+		# Bigger plane, longer stride: scale this step's travel by √size.
+		var p2: Vector3 = before + (r.pos - before) * sqrt(size)
+		if r.ground:
+			p2.y = r.pos.y
+		else:
+			p2.y = maxf(p2.y, under + gear_height)
+		r.pos = p2
 	# Rolling off a table edge: start falling instead of floating.
 	if was_ground and r.ground:
 		var under_now: float = battle.surface_below(r.pos + Vector3(0, 0.05, 0)) if battle else 0.0
@@ -383,7 +414,7 @@ func _animate(delta: float) -> void:
 	var h := maxf(0.0, global_position.y - under)
 	_shadow.visible = state != State.WRECKED
 	_shadow.global_position = Vector3(global_position.x, under + 0.003, global_position.z)
-	_shadow.scale = Vector3.ONE * clampf(1.0 - h * 0.25, 0.45, 1.0)
+	_shadow.scale = Vector3.ONE * clampf(1.0 - h * 0.25 / size, 0.45, 1.0) * size
 	(_shadow.material_override as StandardMaterial3D).albedo_color.a = clampf(0.55 - h * 0.18, 0.12, 0.55) * (0.45 if _sil else 1.0)
 	if _sil:
 		# Sun straight above: squash the body onto the floor under the plane.
@@ -397,7 +428,7 @@ func _animate(delta: float) -> void:
 	if _sight.visible:
 		var hot := aim_assist and battle != null and _assist_point() != Vector3.INF
 		(_sight.material_override as ShaderMaterial).set_shader_parameter("albedo", Color(1.0, 0.35, 0.2, 0.95) if hot else Color(1.0, 0.95, 0.5, 0.9))
-		var at := nose() + forward() * 0.9
+		var at := nose() + forward() * 0.9 * maxf(1.0, size * 0.6)
 		_sight.global_position = at
 		var cam := get_viewport().get_camera_3d()
 		if cam:

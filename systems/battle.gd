@@ -57,9 +57,14 @@ var arena_origin: Vector3 = Vector3.ZERO
 var arena_fwd: Vector3 = Vector3.FORWARD
 var arena_side: Vector3 = Vector3.RIGHT
 var arena_center: Vector3 = Vector3(0, 0, -2.2)
-const ARENA_SIDE := 2.6
+# v1.8 (free flight): a wider, deeper and taller fight area, still in front of you.
+const ARENA_SIDE := 4.0
 const ARENA_NEAR := 1.0
-const ARENA_FAR := 4.6
+const ARENA_FAR := 7.5
+const ARENA_TOP := 4.0
+# Open sky around the player for free flight: re-centred on the headset as you walk.
+const SKY_HALF := 40.0
+const SKY_HEIGHT := 12.0
 var _arena_marks: Array = []
 var _low_warned: bool = false
 var missiles_beaten: int = 0         # homing missiles shot down, rolled off or decoyed
@@ -509,8 +514,8 @@ func _set_arena() -> void:
 		if is_instance_valid(m):
 			m.queue_free()
 	_arena_marks.clear()
-	# Four amber corner brackets on the floor show where the fight is.
-	for sx: float in [-1.0, 1.0]:
+	# v1.8: no floor brackets — the fight is not fenced in (free flight, walk around).
+	for sx: float in ([] if free_flight else [-1.0, 1.0]):
 		for fz: float in [ARENA_NEAR, ARENA_FAR]:
 			var holder := Node3D.new()
 			add_child(holder)
@@ -533,7 +538,7 @@ func clamp_front(p: Vector3) -> Vector3:
 	var d := p - arena_origin
 	var s := clampf(d.dot(arena_side), -ARENA_SIDE, ARENA_SIDE)
 	var f := clampf(d.dot(arena_fwd), ARENA_NEAR, ARENA_FAR)
-	var y := clampf(p.y, floor_y + 0.5, floor_y + 2.6)
+	var y := clampf(p.y, floor_y + 0.5, floor_y + ARENA_TOP)
 	var out := arena_origin + arena_side * s + arena_fwd * f
 	out.y = y
 	return out
@@ -547,9 +552,9 @@ func arena_random(height_lo: float = 0.9, height_hi: float = 2.2) -> Vector3:
 
 ## Where enemy planes appear: far ahead, spread across the front.
 func arena_entry(k: int) -> Vector3:
-	var s := clampf(_rng.randf_range(-2.2, 2.2) + (k - 1) * 0.6, -2.6, 2.6)
-	var p := arena_origin + arena_side * s + arena_fwd * _rng.randf_range(5.0, 5.8)
-	p.y = floor_y + _rng.randf_range(1.3, 2.1)
+	var s := clampf(_rng.randf_range(-3.2, 3.2) + (k - 1) * 0.6, -ARENA_SIDE, ARENA_SIDE)
+	var p := arena_origin + arena_side * s + arena_fwd * _rng.randf_range(ARENA_FAR + 0.4, ARENA_FAR + 1.4)
+	p.y = floor_y + _rng.randf_range(1.3, 2.4)
 	return p
 
 
@@ -557,6 +562,10 @@ func arena_entry(k: int) -> Vector3:
 ## stand and which way you face, so the fight stays in front of you.
 func _follow_player(delta: float) -> void:
 	var hp := head_position()
+	if free_flight and room:
+		# Free flight: the open sky moves with you, so walking never hits an edge.
+		room.box = {"min": Vector3(hp.x - SKY_HALF, floor_y, hp.z - SKY_HALF), "max": Vector3(hp.x + SKY_HALF, floor_y + SKY_HEIGHT, hp.z + SKY_HALF)}
+		room.ceiling_y = floor_y + SKY_HEIGHT
 	var want := Vector3(hp.x, floor_y, hp.z)
 	arena_origin = arena_origin.lerp(want, minf(1.0, delta * 0.8))
 	var f := -(head as Node3D).global_basis.z
@@ -577,7 +586,7 @@ func _follow_player(delta: float) -> void:
 
 func _check_behind(delta: float) -> void:
 	_behind_t -= delta
-	if not plane.airborne() or _behind_t > 0.0:
+	if free_flight or not plane.airborne() or _behind_t > 0.0:
 		return
 	if (plane.global_position - arena_origin).dot(arena_fwd) < 0.2:
 		_behind_t = 4.0
@@ -1250,7 +1259,7 @@ func _resolve_hostile(s: Shot, a: Vector3, b: Vector3) -> void:
 				s.dead = true
 				return
 		"shell", "ebomb":
-			var hit_plane := plane.alive() and WarMath.segment_sphere(a, b, pp, WarMath.PLANE_RADIUS) >= 0.0
+			var hit_plane := plane.alive() and WarMath.segment_sphere(a, b, pp, plane.radius()) >= 0.0
 			var w := wall_hit(a, b)
 			var hit_friend = _friend_hit(a, b)
 			if hit_friend != null and w.is_empty() and not hit_plane:
@@ -1281,7 +1290,7 @@ func _resolve_hostile(s: Shot, a: Vector3, b: Vector3) -> void:
 		Fx.sparks(self, b, (a - b).normalized(), 3, Color(1.0, 0.5, 0.3))
 		damage_friend(fh, s.damage * 0.3, b)
 		return
-	if plane.alive() and WarMath.segment_sphere(a, b, pp, WarMath.PLANE_RADIUS + (0.03 if s.kind == "sam" else 0.0)) >= 0.0:
+	if plane.alive() and WarMath.segment_sphere(a, b, pp, plane.radius() + (0.03 if s.kind == "sam" else 0.0)) >= 0.0:
 		s.dead = true
 		if s.kind == "sam":
 			Fx.explosion(self, b, 0.06)
@@ -1487,7 +1496,7 @@ func _step_pickups(delta: float) -> void:
 		p.set_meta("life", life)
 		p.rotate_y(delta * 2.0)
 		p.global_position.y += sin(life * 3.0) * 0.02 * delta
-		if phase == Phase.PLAYING and plane.alive() and p.global_position.distance_to(plane.global_position) < 0.16:
+		if phase == Phase.PLAYING and plane.alive() and p.global_position.distance_to(plane.global_position) < 0.16 * maxf(1.0, plane.size * 0.7):
 			plane.repair(25.0)
 			cue("pickup", p.global_position)
 			_add_score(20, p.global_position)

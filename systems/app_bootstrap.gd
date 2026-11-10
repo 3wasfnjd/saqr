@@ -176,6 +176,7 @@ func apply_settings() -> void:
 		plane.leveler = bool(Profile.get_s("leveler"))
 		plane.haptics = bool(Profile.get_s("haptics"))
 		plane.easy_flight = str(Profile.get_s("flight")) != "pro"
+		plane.set_size(float(Profile.get_s("plane_size")))
 	if xr and xr.is_initialized() and not preview:
 		var want := float(int(Profile.get_s("refresh")))
 		var rates := xr.get_available_display_refresh_rates()

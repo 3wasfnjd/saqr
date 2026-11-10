@@ -401,6 +401,7 @@ func _settings(tab: String) -> void:
 			rows.append([Lang.t("language"), "choice", "lang", [["ar", "العربية"], ["en", "English"]]])
 			rows.append([Lang.t("difficulty"), "choice", "difficulty", [["easy", Lang.t("easy")], ["normal", Lang.t("normal")], ["hard", Lang.t("hard")]]])
 			rows.append(["", "note", Lang.t("diff_%s_d" % str(Profile.get_s("difficulty")))])
+			rows.append([Lang.t("plane_size"), "choice", "plane_size", [[1.0, "×1"], [2.0, "×2"], [4.0, "×4"], [8.0, Lang.t("huge")]]])
 			rows.append([Lang.t("reset_progress"), "reset"])
 		"controls":
 			rows.append([Lang.t("flight_mode"), "choice", "flight", [["easy", Lang.t("easy")], ["pro", Lang.t("pro")]]])
